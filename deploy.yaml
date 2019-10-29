@@ -1,0 +1,46 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ffmpeg-broken-dns
+spec:
+  template:
+    spec:
+      containers:
+      - name: sleep-1-day
+        image: jeremyje/ffmpeg-dns-localhost-repro
+        imagePullPolicy: Always
+        command: ["sleep", "86400"]
+      - name: find-files
+        image: jeremyje/ffmpeg-dns-localhost-repro
+        imagePullPolicy: Always
+        command: ["find", "/app", "-print"]
+      - name: nslookup-localhost
+        image: jeremyje/ffmpeg-dns-localhost-repro
+        imagePullPolicy: Always
+        command: ["nslookup", "localhost"]
+      - name: serve-localhost-connect-localhost
+        image: jeremyje/ffmpeg-dns-localhost-repro
+        imagePullPolicy: Always
+        command: ["/app/main",  "-serve_via=localhost", "-connect_via=localhost", "-port=10000"]
+      - name: serve-localhost-connect-127001
+        image: jeremyje/ffmpeg-dns-localhost-repro
+        imagePullPolicy: Always
+        command: ["/app/main",  "-serve_via=localhost", "-connect_via=127.0.0.1", "-port=10001"]
+      - name: serve-127001-connect-localhost
+        image: jeremyje/ffmpeg-dns-localhost-repro
+        imagePullPolicy: Always
+        command: ["/app/main",  "-serve_via=127.0.0.1", "-connect_via=localhost", "-port=10002"]
+      - name: serve-127001-connect-127001
+        image: jeremyje/ffmpeg-dns-localhost-repro
+        imagePullPolicy: Always
+        command: ["/app/main",  "-serve_via=127.0.0.1", "-connect_via=127.0.0.1", "-port=10003"]
+      - name: serve-0000-connect-127001
+        image: jeremyje/ffmpeg-dns-localhost-repro
+        imagePullPolicy: Always
+        command: ["/app/main",  "-serve_via=0.0.0.0", "-connect_via=127.0.0.1", "-port=10004"]
+      - name: serve-0000-connect-localhost
+        image: jeremyje/ffmpeg-dns-localhost-repro
+        imagePullPolicy: Always
+        command: ["/app/main",  "-serve_via=0.0.0.0", "-connect_via=localhost", "-port=10005"]
+      restartPolicy: Never
+  backoffLimit: 4
